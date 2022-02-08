@@ -1,0 +1,7 @@
+{
+  "name": "pdm-projeto-firebase",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}

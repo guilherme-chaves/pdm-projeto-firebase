@@ -1,12 +1,12 @@
 export default interface CardContentInterface {
-    category: String,
-    id: Number,
-    title: String,
-    imageUrl: String
+    category: string,
+    id: number,
+    title: string,
+    imageUrl: string
 }
 
 
 export interface CategoryData {
-    name: String,
+    name: string,
     items: Array<CardContentInterface>
 }

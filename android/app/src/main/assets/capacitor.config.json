@@ -1,0 +1,6 @@
+{
+	"appId": "com.example.pdmMeuCloset",
+	"appName": "Meu Closet",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}

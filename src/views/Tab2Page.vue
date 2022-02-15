@@ -14,6 +14,7 @@
 			<ion-grid id="gridList" v-if="isSearching">
 				<ion-row>
 					<item-card-category v-for="item in items" :key="item.id" :title="item.title" :imageUrl="item.imageUrl" :cardUrl="'/tab1/'+item.category+'/'+item.id"></item-card-category>
+				</ion-row>
 			</ion-grid>
 			<ion-text id="no-items" v-else>Digite algo na barra de pesquisa <wbr/>ou escaneie um código QR para pesquisar</ion-text>
 		</ion-content>

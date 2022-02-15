@@ -1,74 +1,144 @@
 <template>
     <ion-page>
-        <ion-text class="content-title" id="title">Bem vindo ao Meu closet!</ion-text>
-        <main v-if="signIn">
-            <ion-text>Faça Login ou registre-se para começar</ion-text>
-            <form>
-                <div class="item-form">
-                    <ion-label>E-mail: </ion-label>
-                    <ion-input type="email" required></ion-input>
-                </div>
-                <div class="item-form">
-                    <ion-label>Senha: </ion-label>
-                    <ion-input type="password" required></ion-input>
-                </div>
-            </form>
-            <ion-button color="primary" @click="() => router.replace('/home')">Entrar</ion-button>
-            <ion-button color="secondary" @click="switchSignIn">Registre-se</ion-button>
-        </main>
-        
-        <main v-else>
-            <ion-text>Faça Login ou registre-se para começar</ion-text>
-            <form>
-                <div class="item-form">
-                    <ion-label>Nome: </ion-label>
-                    <ion-input type="text" required></ion-input>
-                </div>
-                <div class="item-form">
-                    <ion-label>E-mail: </ion-label>
-                    <ion-input type="email" required></ion-input>
-                </div>
-                <div class="item-form">
-                    <ion-label>Telefone: </ion-label>
-                    <ion-input type="text" required></ion-input>
-                </div>
-                <div class="item-form">
-                    <ion-label>Endereço: </ion-label>
-                    <ion-input type="text" required></ion-input>
-                </div>
-                <div class="item-form">
-                    <ion-label>Senha: </ion-label>
-                    <ion-input type="password" required></ion-input>
-                </div>
-            </form>
-            <ion-button color="primary" @click="() => router.replace('/home')">Cadastrar-se</ion-button>
-            <ion-button color="secondary" @click="switchSignIn">Voltar</ion-button>
-        </main>
+        <ion-content :fullscreen="true">
+            <ion-text class="content-title" id="title">Bem vindo ao Meu closet!</ion-text>
+            <main v-if="signIn">
+                <ion-text>Faça Login ou registre-se para começar</ion-text>
+                <form>
+                    <div class="item-form">
+                        <ion-label>E-mail: </ion-label>
+                        <ion-input name="email" type="email" @ionChange="handleChangeLogin" required></ion-input>
+                    </div>
+                    <div class="item-form">
+                        <ion-label>Senha: </ion-label>
+                        <ion-input name="password" type="password" @ionChange="handleChangeLogin" required></ion-input>
+                    </div>
+                </form>
+                <ion-button color="primary"  @click="doLogin">
+                    <ion-spinner v-if="loading" color="light"/>
+                    <span v-else>Entrar</span>
+                </ion-button>
+                <ion-button color="secondary" @click="switchSignIn">Registre-se</ion-button>
+            </main>
+            
+            <main :fullscreen="true" v-else>
+                <ion-text>Faça Login ou registre-se para começar</ion-text>
+                <form>
+                    <div class="item-form">
+                        <ion-label>Nome: </ion-label>
+                        <ion-input type="text" name="username" @ionChange="handleChangeSignUp" required></ion-input>
+                    </div>
+                    <div class="item-form">
+                        <ion-label>E-mail: </ion-label>
+                        <ion-input type="email" name="email" @ionChange="handleChangeSignUp" required></ion-input>
+                    </div>
+                    <div class="item-form">
+                        <ion-label>Telefone: </ion-label>
+                        <ion-input type="text" name="phone" @ionChange="handleChangeSignUp" required></ion-input>
+                    </div>
+                    <div class="item-form">
+                        <ion-label>Endereço: </ion-label>
+                        <ion-input type="text" name="address" @ionChange="handleChangeSignUp" required></ion-input>
+                    </div>
+                    <div class="item-form">
+                        <ion-label>Senha: </ion-label>
+                        <ion-input type="password" name="password" @ionChange="handleChangeSignUp" required></ion-input>
+                    </div>
+                </form>
+                <ion-button color="primary" @click="doSignUp">
+                    <ion-spinner v-if="loading" color="light"/>
+                    <span v-else>Cadastre-se</span>
+                </ion-button>
+                <ion-button color="secondary" @click="switchSignIn">Voltar</ion-button>
+            </main>
+        </ion-content>
     </ion-page>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { IonPage, IonText, IonLabel, IonInput, IonButton } from '@ionic/vue';
+import { defineComponent, ref } from 'vue';
+import { IonPage, IonContent, IonText, IonLabel, IonInput, IonButton, IonSpinner, alertController } from '@ionic/vue';
 import { useRouter } from 'vue-router';
+import useFirebaseAuth from '../api/firebase-auth';
 
 export default defineComponent({
     name: 'LoginPage',
-    components: { IonPage, IonText, IonLabel, IonInput, IonButton },
-    data() {
-        return {
-            signIn: true
-        }
-    },
+    components: { IonPage, IonContent, IonText, IonLabel, IonInput, IonButton, IonSpinner },
     methods: {
         switchSignIn() {
             this.signIn = !this.signIn
         }
     },
     setup() {
+        const state = useFirebaseAuth();
         const router = useRouter();
+        const signIn = ref(true);
 
-        return { router }
+        const credentialsLogin = ref<{[key: string]: string}>({
+            email: "",
+            password: "",
+        });
+        const handleChangeLogin = (e: CustomEvent) => {
+            const name: string = (e?.target as any)?.name;
+            credentialsLogin.value[name as string] = e.detail.value;
+        };
+
+
+        const credentialsSignUp = ref<{[key: string]: string}>({
+            email: "",
+            password: "",
+            username: "",
+            phone: "",
+            address: ""
+        });
+
+        const handleChangeSignUp = (e: CustomEvent) => {
+            const name: string = (e?.target as any)?.name;
+            credentialsSignUp.value[name as string] = e.detail.value;
+        };
+
+
+        const handleAlert = (message: string, isError = false) => {
+            alertController
+                .create({
+                    header: isError ? "Erro: " : "Atenção: ",
+                    message: message,
+                    buttons: ["OK"],
+                })
+                .then((t) => t.present());
+        };
+        const doLogin = async () => {
+            try {
+                const { email, password } = credentialsLogin.value;
+                await state.login(email, password);
+                router.push({name : "Home", replace: true });
+            } catch (error: Error | any) {
+                console.log(error);
+                handleAlert(error.message, true);
+            }
+        };
+        const doSignUp = async () => {
+            try {
+                console.log(credentialsSignUp.value);
+                const { username, email, password, phone, address } = credentialsSignUp.value;
+                await state.signUp(email, password, username, phone, address);
+                router.push({name : "Home", replace: true });
+            } catch (error: Error | any) {
+                console.log(error);
+                handleAlert(error.message, true);
+            }
+        };
+        return {
+            ...state,
+            credentialsLogin,
+            credentialsSignUp,
+            doLogin,
+            doSignUp,
+            handleChangeLogin,
+            handleChangeSignUp,
+            router,
+            signIn
+        }
     }
 })
 </script>

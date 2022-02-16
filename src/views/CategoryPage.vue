@@ -61,10 +61,10 @@ export default defineComponent({
 			const min = max - 20;
 			for (let i = min - 1; i < max; i++) {
 				if(Object.keys(items).length == 0) {
-					items.value[0] = {category: "b", id: i, title: `Card ${i}`, imageUrl: `https://via.placeholder.com/360x510?text=Card+Image+` + i};
+					items.value[0] = {category: "b", id: `${i}`, title: `Card ${i}`, imageUrl: `https://via.placeholder.com/360x510?text=Card+Image+` + i};
 					continue;
 				}
-				items.value.push({category: "a", id: i, title: `Card ${i}`, imageUrl: `https://via.placeholder.com/360x510?text=Card+Image+` + i});
+				items.value.push({category: "a", id: `${i}`, title: `Card ${i}`, imageUrl: `https://via.placeholder.com/360x510?text=Card+Image+` + i});
 			}
 		}
 

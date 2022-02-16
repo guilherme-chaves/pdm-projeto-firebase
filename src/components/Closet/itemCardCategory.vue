@@ -1,6 +1,6 @@
 <template>
-    <ion-col size-xs="12" size-sm="6" size-md="3">
-        <ion-card button="true" @click="() => route.push(cardUrl)">
+    <ion-col size-xs="6" size-sm="4" size-md="3">
+        <ion-card button="true" @click="() => router.push(cardUrl)">
             <ion-card-header>
                 <ion-img :src="imageUrl"></ion-img>
             </ion-card-header>
@@ -14,7 +14,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { IonCol, IonCard, IonCardHeader, IonCardContent, IonCardTitle, IonImg } from '@ionic/vue'
-import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
     name: 'ItemCardCategory',
@@ -25,8 +25,8 @@ export default defineComponent({
         cardUrl: String
     },
     setup() {
-        const route = useRoute();
-        return { route }
+        const router = useRouter();
+        return { router }
     }
 })
 </script>

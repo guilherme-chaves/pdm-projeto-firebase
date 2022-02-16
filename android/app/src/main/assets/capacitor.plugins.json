@@ -1,7 +1,19 @@
 [
 	{
+		"pkg": "@capacitor-community/barcode-scanner",
+		"classpath": "com.dutchconcepts.capacitor.barcodescanner.BarcodeScanner"
+	},
+	{
 		"pkg": "@capacitor/app",
 		"classpath": "com.capacitorjs.plugins.app.AppPlugin"
+	},
+	{
+		"pkg": "@capacitor/camera",
+		"classpath": "com.capacitorjs.plugins.camera.CameraPlugin"
+	},
+	{
+		"pkg": "@capacitor/filesystem",
+		"classpath": "com.capacitorjs.plugins.filesystem.FilesystemPlugin"
 	},
 	{
 		"pkg": "@capacitor/haptics",

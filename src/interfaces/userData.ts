@@ -4,4 +4,5 @@ export interface UserData {
     userEmail: string;
     userPhone: string;
     userAddress: string;
+    userImagePath: string;
 }

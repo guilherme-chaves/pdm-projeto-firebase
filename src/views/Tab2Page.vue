@@ -40,7 +40,8 @@ import {
 	SearchbarCustomEvent,
 	IonFab,
 	IonFabButton,
-	IonIcon
+	IonIcon,
+	IonRow
 } from '@ionic/vue';
 import { qrCodeOutline } from 'ionicons/icons';
 import itemCardCategory from '../components/Closet/itemCardCategory.vue'
@@ -59,6 +60,7 @@ export default defineComponent({
 		IonFab,
 		IonFabButton,
 		IonIcon,
+		IonRow,
 		itemCardCategory
 	},
 	setup() {

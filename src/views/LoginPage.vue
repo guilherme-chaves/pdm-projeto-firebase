@@ -25,6 +25,13 @@
                 <ion-text>Faça Login ou registre-se para começar</ion-text>
                 <form>
                     <div class="item-form">
+                        <ion-avatar v-if="imageUploaded">
+                            <img :src="imageData"/>
+                        </ion-avatar>
+                        <ion-label>Foto de perfil: </ion-label>
+                        <ion-button color="medium" @click="takePicture">Adicionar foto</ion-button>
+                    </div>
+                    <div class="item-form">
                         <ion-label>Nome: </ion-label>
                         <ion-input type="text" name="username" @ionChange="handleChangeSignUp" required></ion-input>
                     </div>
@@ -57,13 +64,14 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { IonPage, IonContent, IonText, IonLabel, IonInput, IonButton, IonSpinner, alertController } from '@ionic/vue';
+import { IonPage, IonContent, IonText, IonLabel, IonInput, IonButton, IonSpinner, IonAvatar, alertController } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import useFirebaseAuth from '../api/firebase-auth';
+import { Camera, CameraResultType } from '@capacitor/camera';
 
 export default defineComponent({
     name: 'LoginPage',
-    components: { IonPage, IonContent, IonText, IonLabel, IonInput, IonButton, IonSpinner },
+    components: { IonPage, IonContent, IonText, IonLabel, IonInput, IonButton, IonSpinner, IonAvatar },
     methods: {
         switchSignIn() {
             this.signIn = !this.signIn
@@ -73,11 +81,14 @@ export default defineComponent({
         const state = useFirebaseAuth();
         const router = useRouter();
         const signIn = ref(true);
+        const imageUploaded = ref(false);
+        const imageData = ref("");
 
         const credentialsLogin = ref<{[key: string]: string}>({
             email: "",
             password: "",
         });
+        
         const handleChangeLogin = (e: CustomEvent) => {
             const name: string = (e?.target as any)?.name;
             credentialsLogin.value[name as string] = e.detail.value;
@@ -107,6 +118,26 @@ export default defineComponent({
                 })
                 .then((t) => t.present());
         };
+
+
+        const takePicture = async () => {
+            const permissionStatus = await Camera.checkPermissions();
+            if(permissionStatus.camera == 'denied' || permissionStatus.photos == 'denied'){
+                await Camera.requestPermissions();
+            }
+            const image = await Camera.getPhoto({
+                quality: 80,
+                allowEditing: false,
+                resultType: CameraResultType.Base64
+            });
+
+            var imageUrl = image.webPath;
+            imageData.value = image.base64String ?? "";
+            if (imageData.value) {
+                imageUploaded.value = true;
+            }
+        };
+
         const doLogin = async () => {
             try {
                 const { email, password } = credentialsLogin.value;
@@ -117,12 +148,14 @@ export default defineComponent({
                 handleAlert(error.message, true);
             }
         };
+
+
         const doSignUp = async () => {
             try {
                 console.log(credentialsSignUp.value);
                 const { username, email, password, phone, address } = credentialsSignUp.value;
-                await state.signUp(email, password, username, phone, address);
-                router.push({name : "Home", replace: true });
+                await state.signUp(email, password, username, phone, address, imageData.value);
+                router.push({name : "Login", replace: true });
             } catch (error: Error | any) {
                 console.log(error);
                 handleAlert(error.message, true);
@@ -137,7 +170,10 @@ export default defineComponent({
             handleChangeLogin,
             handleChangeSignUp,
             router,
-            signIn
+            signIn,
+            takePicture,
+            imageUploaded,
+            imageData
         }
     }
 })

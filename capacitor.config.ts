@@ -4,7 +4,8 @@ const config: CapacitorConfig = {
   appId: 'com.example.pdmMeuCloset',
   appName: 'Meu Closet',
   webDir: 'dist',
-  bundledWebRuntime: false
+  bundledWebRuntime: false,
+  backgroundColor: "#FAFAFA"
 };
 
 export default config;

@@ -1,6 +1,8 @@
 import { toRefs, reactive } from "vue";
 import { UserCredential, User, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, onValue, ref, set } from "firebase/database";
+import { getStorage, ref as storeRef, uploadString, getDownloadURL} from "firebase/storage";
+import { Filesystem } from '@capacitor/filesystem';
 import { startApp } from "../enviroment/firebase.config";
 import { UserData } from "../interfaces/userData";
 
@@ -33,8 +35,9 @@ export default function() {
                 userId: data.userId,
                 userName: data.userName,
                 userEmail: data.userEmail,
-                userPhone: data.usePhone,
+                userPhone: data.userPhone,
                 userAddress: data.userAddress,
+                userImagePath: getImageUrl(data.userImagePath)
             }
             return userData;
         },
@@ -44,8 +47,34 @@ export default function() {
         return null;
     }
 
-    const setUserData = (name: string, phone: string, address: string): UserData | null => {
+
+    const getImageUrl = (imagePath: string): string => {
+        if(imagePath) {
+            return "https://firebasestorage.googleapis.com/b/pdm-meu-closet.appspot.com/o/" + encodeURIComponent(imagePath) + ".jpg"
+        }
+        return 'https://gravatar.com/avatar/dba6bae8c566f9d4041fb9cd9ada7741?d=identicon&f=y'
+    }
+
+    const readFilePath = async (path: string) => {
+        // Here's an example of reading a file with a full file path. Use this to
+        // read binary data (base64 encoded) from plugins that return File URIs, such as
+        // the Camera.
+        const contents = await Filesystem.readFile({
+            path
+        });
+        return contents;
+    };
+
+
+    const setUserData = async (name: string, phone: string, address: string, image: string): Promise<UserData | null> => {
         const auth = getAuth();
+        const storage = getStorage();
+        //const imageData = await readFilePath(image);
+        const avatarRef = storeRef(storage, `avatars/${auth.currentUser?.uid ?? 'dummy'}`);
+        const upload = await uploadString(avatarRef, image, 'base64', { contentType: "image/jpeg" }).then((snapshot) => {
+            console.log('Uploaded a base64 string!');
+        });
+        const avatarUrl = await getDownloadURL(avatarRef);
         const db = getDatabase(firebaseApp);
         const defaultUserData: UserData = {
             userId: auth.currentUser?.uid ?? '',
@@ -53,6 +82,7 @@ export default function() {
             userEmail: auth.currentUser?.email ?? '',
             userPhone: phone,
             userAddress: address,
+            userImagePath: avatarUrl
         }
         set(ref(db, 'users/' + auth.currentUser?.uid), defaultUserData);
         return defaultUserData;
@@ -101,7 +131,7 @@ export default function() {
         }
     }
 
-    const signUp = async (email: string, password: string, name: string, phone: string, address: string) => {
+    const signUp = async (email: string, password: string, name: string, phone: string, address: string, image: string) => {
         state.loading = true;
         try {
             try {
@@ -110,7 +140,7 @@ export default function() {
                 state.user = user;
                 state.error = null;
                 state.loading = false;
-                state.userData = setUserData(name, phone, address);
+                state.userData = await setUserData(name, phone, address, image);
             } catch (error: any) {
                 state.error = error;
                 state.loading = false;

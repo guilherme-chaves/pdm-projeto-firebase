@@ -18,7 +18,7 @@
 			</ion-grid>
 			<ion-text id="no-items" v-else>Digite algo na barra de pesquisa <wbr/>ou escaneie um código QR para pesquisar</ion-text>
 		</ion-content>
-		<ion-fab vertical="bottom" horizontal="end" slot="fixed">
+		<ion-fab vertical="bottom" horizontal="end" slot="fixed" @click="startScan">
 			<ion-fab-button color="success" aria-label="Adicionar roupa">
 				<ion-icon id="icon-qr" :icon="qrCodeOutline"></ion-icon>
 			</ion-fab-button>
@@ -44,6 +44,7 @@ import {
 	IonRow
 } from '@ionic/vue';
 import { qrCodeOutline } from 'ionicons/icons';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import itemCardCategory from '../components/Closet/itemCardCategory.vue'
 
 export default defineComponent({
@@ -63,6 +64,13 @@ export default defineComponent({
 		IonRow,
 		itemCardCategory
 	},
+	deactivated() {
+		this.stopScan();
+	},
+
+	beforeUnmount() {
+		this.stopScan();
+	},
 	setup() {
 		const isSearching = ref(false);
 		const searchItemCode = (ev: SearchbarCustomEvent) => {
@@ -74,7 +82,38 @@ export default defineComponent({
 			console.log(ev.detail.value);
 		}
 
-		return { isSearching, searchItemCode, qrCodeOutline }
+		const checkPermission = async () => {
+			// check or request permission
+			const status = await BarcodeScanner.checkPermission({ force: true });
+
+			if (status.granted) {
+				// the user granted permission
+				return true;
+			}
+
+			return false;
+		};
+
+		const startScan = async () => {
+			const status = await checkPermission();
+			if(status) {
+				BarcodeScanner.hideBackground(); // make background of WebView transparent
+
+				const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
+
+				// if the result has content
+				if (result.hasContent) {
+					console.log(result.content); // log the raw scanned content
+				}
+			}
+		};
+
+		const stopScan = () => {
+			BarcodeScanner.showBackground();
+			BarcodeScanner.stopScan();
+		};
+
+		return { isSearching, searchItemCode, qrCodeOutline, startScan, stopScan }
 	}
 });
 </script>
